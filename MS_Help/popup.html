@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { width: 450px; margin: 0; padding: 15px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8f9fa; color: #333; }
+        h3 { margin-top: 0; margin-bottom: 12px; font-size: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 6px; color: #212529; }
+        
+        .section { background: white; padding: 12px; border-radius: 6px; border: 1px solid #dee2e6; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        label { font-weight: 600; display: block; margin-bottom: 4px; font-size: 11px; color: #495057; }
+        textarea { width: 100%; height: 80px; box-sizing: border-box; border: 1px solid #ced4da; border-radius: 4px; padding: 6px; font-family: monospace; font-size: 11px; resize: vertical; }
+        input[type="text"], input[type="password"] { width: 100%; box-sizing: border-box; border: 1px solid #ced4da; border-radius: 4px; padding: 6px; font-size: 11px; margin-bottom: 6px; }
+        
+        /* VIP Список */
+        .vip-list-container { max-height: 140px; overflow-y: auto; border: 1px solid #ced4da; border-radius: 4px; background: #fff; margin-bottom: 8px; }
+        .vip-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 1px solid #f1f3f5; font-size: 12px; }
+        .vip-item:last-child { border-bottom: none; }
+        .vip-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+        .vip-actions { display: flex; gap: 4px; }
+        
+        /* Кнопки */
+        button { border: none; border-radius: 4px; padding: 6px 10px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; }
+        .btn-primary { background: #2e7d32; color: white; width: 100%; padding: 10px; font-size: 13px; margin-top: 5px; }
+        .btn-primary:hover { background: #1b5e20; }
+        .btn-add { background: #e2e8f0; color: #4a5568; width: 100%; padding: 6px; font-size: 12px; border: 1px dashed #cbd5e1; }
+        .btn-add:hover { background: #cbd5e1; }
+        .btn-edit { background: #f1f3f5; color: #495057; border: 1px solid #ced4da; padding: 3px 6px; font-size: 11px; }
+        .btn-edit:hover { background: #e9ecef; }
+        .btn-delete { background: #fff0f0; color: #e63946; padding: 3px 6px; font-size: 11px; }
+        .btn-delete:hover { background: #ffe3e3; }
+        
+        /* Облачные кнопки */
+        .cloud-actions { display: flex; gap: 8px; margin-top: 4px; }
+        .btn-cloud-in { background: #673ab7; color: white; flex: 1; padding: 8px; font-size: 11px; }
+        .btn-cloud-in:hover { background: #512da8; }
+        .btn-cloud-out { background: #0284c7; color: white; flex: 1; padding: 8px; font-size: 11px; }
+        .btn-cloud-out:hover { background: #0369a1; }
+        
+        /* Блок Экспорта/Импорта */
+        .sync-container { display: flex; gap: 8px; margin-top: 8px; }
+        .btn-sync { background: #e0e0e0; color: #333; flex: 1; padding: 6px; font-size: 11px; border: 1px solid #ccc; }
+        .btn-sync:hover { background: #d5d5d5; }
+        
+        /* Модальное окно */
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 15px; border-radius: 6px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .modal-header { font-weight: bold; margin-bottom: 10px; font-size: 13px; color: #0277bd; border-bottom: 1px solid #e9ecef; padding-bottom: 4px; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px; }
+        .btn-modal-save { background: #0277bd; color: white; }
+        .btn-modal-close { background: #6c757d; color: white; }
+        
+        /* Строка поиска в модалке */
+        .search-box { position: relative; margin-bottom: 8px; }
+        .search-box input { width: 100%; box-sizing: border-box; padding: 5px 8px; border: 1px solid #0277bd; border-radius: 4px; font-size: 11px; background: #f0f8ff; }
+    </style>
+</head>
+<body>
+
+    <h3>🛠️ Настройки МойСклад Помощника</h3>
+    
+    <!-- Облачная синхронизация GitHub -->
+    <div class="section" style="background: #f0fdf4; border-color: #bbf7d0;">
+        <label style="color: #166534;">🔗 Ссылка на файл (GitHub Raw URL):</label>
+        <input type="text" id="githubUrl" placeholder="https://raw.githubusercontent.com/...">
+        
+        <label style="color: #166534;">🔑 Секретный токен (GitHub Token):</label>
+        <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxx">
+        
+        <div class="cloud-actions">
+            <button class="btn-cloud-in" id="cloudPullBtn">📥 Получить из Облака</button>
+            <button class="btn-cloud-out" id="cloudPushBtn">📤 Отправить в Облако</button>
+        </div>
+    </div>
+
+    <!-- Скидки ОПТ -->
+    <div class="section">
+        <label>📦 База Скидок ОПТ (Текст):</label>
+        <textarea id="brandRules" placeholder="Odeon Light: 45, Maytoni: 40, Lightstar: 47"></textarea>
+    </div>
+    
+    <!-- Скидки ДРОП -->
+    <div class="section">
+        <label>🚚 База Скидок ДРОП (Текст):</label>
+        <textarea id="dropRules" placeholder="Odeon Light: 40, Maytoni: 35, Lightstar: 42"></textarea>
+    </div>
+    
+    <!-- Менеджер VIP клиентов -->
+    <div class="section">
+        <label>👑 База VIP Клиентов:</label>
+        <div class="vip-list-container" id="vipList"></div>
+        <button class="btn-add" id="addVipBtn">➕ Добавить нового VIP клиента</button>
+    </div>
+    
+    <!-- Локальное сохранение -->
+    <button class="btn-primary" id="saveAll">💾 Сохранить локально на этом ПК</button>
+
+    <!-- Ручной Экспорт/Импорт -->
+    <div class="sync-container">
+        <button class="btn-sync" id="exportBtn">Выгрузить файл</button>
+        <button class="btn-sync" id="importBtn">Загрузить файл</button>
+        <input type="file" id="fileInput" accept=".json" style="display: none;">
+    </div>
+
+    <!-- Модалка редактирования VIP скидок с ПОИСКОМ -->
+    <div id="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">Настройка скидок</div>
+            
+            <!-- Поле живого поиска бренда -->
+            <div class="search-box">
+                <input type="text" id="brandSearchInput" placeholder="🔍 Быстрый поиск бренда (например: Odeon)...">
+            </div>
+            
+            <label>Скидки бренда:</label>
+            <textarea id="modalRules" style="height: 140px;"></textarea>
+            <div id="searchStatus" style="font-size: 11px; color: #0277bd; margin-top: 2px; font-weight: 500;"></div>
+            
+            <div class="modal-footer">
+                <button class="btn-modal-close" id="modalClose">Отмена</button>
+                <button class="btn-modal-save" id="modalSave">Применить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

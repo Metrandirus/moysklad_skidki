@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Помощник МойСклад",
+  "version": "1.1.0",
+  "description": "Автоматизация скидок в заказах и цен в отгрузках с автообновлением",
+  "permissions": ["storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://online.moysklad.ru/app/*"],
+      "js": ["loader.js"]
+    }
+  ]
+}
